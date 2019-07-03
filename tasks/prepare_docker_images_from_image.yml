@@ -1,0 +1,14 @@
+####################################################################################
+# lm_docker_strategy == from_image
+####################################################################################
+
+- name: Create Docker Image Registry values file
+  template:
+    src: "docker-registry-values.yml"
+    dest: "{{ arm_installer_dir }}/docker-registry-values.yml"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+
+- name: Create Docker Registry values file inclusion property
+  set_fact:
+    docker_registry_values_path: "{{ arm_installer_dir }}/docker-registry-values.yml"

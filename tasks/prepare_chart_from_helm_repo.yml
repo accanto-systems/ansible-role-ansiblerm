@@ -1,0 +1,7 @@
+####################################################################################
+# arm_charts_strategy == from_chart_repo
+####################################################################################
+
+- name: Set paths to charts
+  set_fact:
+    helm_inst_arm_chart: "{{arm_charts_repo_name}}/osslm-ansible-resource-manager --version {{arm_chart_version}}"

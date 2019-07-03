@@ -1,0 +1,33 @@
+- name: "Validate variable: arm_charts_strategy"
+  assert:
+    that:
+      - "arm_charts_strategy == 'path' or arm_charts_strategy == 'from_chart_repo'"
+    fail_msg: "arm_charts_strategy must be either: 'path' or 'from_chart_repo'"
+     
+
+####################################################################################
+# Strategy: path
+####################################################################################
+- name: "Validate variable: arm_chart"
+  assert:
+    that: 
+      - "arm_chart is defined"
+    fail_msg: "arm_chart must be defined when arm_charts_strategy == 'path'"
+  when: arm_charts_strategy == "path"
+
+####################################################################################
+# Strategy: from_chart_repo
+####################################################################################
+- name: "Validate variable: arm_charts_repo_name"
+  assert:
+    that: 
+      - "arm_charts_repo_name is defined"
+    fail_msg: "arm_charts_repo_name must be defined when arm_charts_strategy == 'from_chart_repo'"
+  when: arm_charts_strategy == "from_chart_repo"
+
+- name: "Validate variable: arm_chart_version"
+  assert:
+    that: 
+      - "arm_chart_version is defined"
+    fail_msg: "arm_chart_version must be defined when arm_charts_strategy == 'from_chart_repo'"
+  when: arm_charts_strategy == "from_chart_repo"

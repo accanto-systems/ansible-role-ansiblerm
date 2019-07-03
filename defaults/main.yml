@@ -1,0 +1,44 @@
+###########################################################
+# Helm Chart installation packages
+###########################################################
+## Install from a helm chart at a given path
+arm_charts_strategy: path
+## Full path to the chart (can be a file path or http address)
+arm_chart: https://github.com/IBM/osslm-ansible-resource-manager/releases/download/v1.3.4/osslm-ansible-resource-manager-1.3.4.tgz
+
+## Install from a chart repository previously configured in Helm on the target machine (e.g. from helm repo list)
+#arm_charts_strategy: from_chart_repo
+#arm_charts_repo_name: accanto
+#arm_chart_version: 2.0.0-xyz
+
+###########################################################
+# Docker Images
+###########################################################
+## Pull a docker image TAR (can be file based or http)
+#arm_docker_strategy: from_package
+#arm_docker_tar: http://myrepo/ansiblerm-docker.tar OR /mydir/subdir/subdir2/ansiblerm-docker.tar
+
+## Pull the Docker Image from DockerHub (or a registry by including registry info e.g. myregistry:5000/osslm-ansible-rm)
+arm_docker_strategy: from_image
+arm_docker_image: accanto/osslm-ansible-rm
+## Leave empty to use "latest" tag
+#arm_docker_version: 1.3.1
+
+arm_secure: True
+
+arm_onboard: True
+## Address of an LM API Gateway to onboard the RM
+#arm_onboard_addr:
+arm_onboard_auth: False
+arm_onboard_client: LmClient
+arm_onboard_client_secret: 
+arm_onboard_name: defaultrm
+arm_onboard_type: ansiblerm
+## Use the internal address of the ansible-rm (when LM is installed in the same Kubernetes cluster). Otherwise use 'external'
+arm_onboard_url_type: internal
+
+#arm_docker_location_lm_ip:
+#arm_docker_location_relay_addr: 
+
+arm_force_refresh_packages: False
+arm_force_reinstall: False

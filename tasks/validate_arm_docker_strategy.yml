@@ -1,0 +1,27 @@
+- name: "Validate variable: arm_docker_strategy"
+  assert:
+    that:
+      - "arm_docker_strategy == 'from_package' or arm_docker_strategy == 'from_image'"
+    fail_msg: "arm_docker_strategy must be either: 'from_package' or 'from_image'"
+
+####################################################################################
+# Strategy: from_package
+####################################################################################
+- name: "Validate variable: arm_docker_tar"
+  assert:
+    that: 
+      - "arm_docker_tar is defined"
+    fail_msg: "arm_docker_tar must be defined when arm_docker_strategy == 'from_package'"
+  when: arm_docker_strategy == "from_package"
+
+####################################################################################
+# Strategy: from_image
+####################################################################################
+
+- name: "Validate variable: arm_docker_image"
+  assert:
+    that: 
+      - "arm_docker_image is defined"
+    fail_msg: "arm_docker_image must be defined when arm_docker_strategy == 'from_image'"
+  when: arm_docker_strategy == "from_image"
+  

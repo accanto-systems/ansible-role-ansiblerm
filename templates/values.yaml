@@ -1,0 +1,14 @@
+app:
+  config:
+    env:
+      ssl_enabled: "{{ arm_secure }}"
+    security:
+      ssl:
+        enabled: {{ arm_secure }}
+
+persistence:
+  size: "1Gi"
+  ## If enabled, will create the PVs needed.
+  enabled: true
+  storageClass: "manual"
+  hostPath: "/var/lib/osslm"

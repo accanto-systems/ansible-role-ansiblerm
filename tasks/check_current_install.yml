@@ -1,0 +1,33 @@
+- name: Determine if Ansible RM already installed
+  shell: helm ls | grep ansiblerm
+  failed_when: false
+  changed_when: false
+  register: arm_installed
+
+- when: arm_installed is not failed and arm_installed.rc == 0
+  block:
+    - name: Check Ansible RM version to be installed
+      shell: helm inspect chart {{ helm_inst_arm_chart }} | grep version | awk {'print $2'}
+      register:  arm_new_version
+
+    - debug:
+        msg: "Ansible RM version to be installed is {{arm_new_version.stdout}}"
+
+    - name: Compare with current Ansible RM version
+      shell: helm ls | grep ansiblerm | grep -w osslm-ansible-resource-manager-{{ arm_new_version.stdout }}
+      register: arm_version_compare
+      failed_when: false
+      changed_when: false
+
+    - name: Set install 
+      set_fact:
+        install_allowed: "{{ True if arm_version_compare.rc != 0 else False }}"
+
+    - name: Announce Install 
+      debug:
+        msg: "{{ 'Re-installing Ansible RM as current version is different to '+arm_new_version.stdout if install_allowed else 'Ansible RM version '+arm_new_version.stdout+' already installed' }}"
+
+- name: Install when no existing version
+  set_fact:
+    install_allowed: True
+  when: arm_installed is failed or arm_installed.rc != 0

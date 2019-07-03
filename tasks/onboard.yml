@@ -1,0 +1,97 @@
+- name: Gather Ansible RM Https Port
+  shell: "kubectl describe service osslm-ansible-rm | grep https | grep NodePort | awk '{print $3}'"
+  register: gather_ansible_rm_port_result
+
+- name: Determine Ansible RM Port
+  set_fact:
+    arm_port: "{% if arm_secure|default(False)|bool == True %}{{ gather_ansible_rm_port_result.stdout | replace('/TCP', '') }}{% else %}31081{% endif %}"
+
+- name: Determine Ansible RM address
+  set_fact: 
+    arm_addr: "{% if arm_secure|default(False)|bool == True %}https{% else %}http{% endif %}://{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{arm_port}}"
+
+- name: Attach Dev location
+  uri: 
+    url: "{{ arm_addr }}/api/v1.0/resource-manager/topology/deployment-locations/local"
+    validate_certs: false
+    method: PUT
+    body_format: json
+    body:
+      name: "local"
+      properties:
+        location_server: "{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        relay_endpoint: "{{ arm_docker_location_relay_addr }}"
+        almip: "{{ arm_docker_location_lm_ip }}"
+        location_user: "{{ ansible_ssh_user }}"
+        location_pwd: "{{ ansible_ssh_pass if ansible_ssh_pass is defined else 'vagrant'}}"
+      type: "docker"
+
+- name: Attach london location
+  uri: 
+    url: "{{ arm_addr }}/api/v1.0/resource-manager/topology/deployment-locations/london"
+    method: PUT
+    validate_certs: false
+    body_format: json
+    body:
+      name: "london"
+      properties:
+        location_server: "{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        relay_endpoint: "{{ arm_docker_location_relay_addr }}"
+        almip: "{{ arm_docker_location_lm_ip }}"
+        location_user: "{{ ansible_ssh_user }}"
+        location_pwd: "{{ ansible_ssh_pass if ansible_ssh_pass is defined else 'vagrant'}}"
+      type: "docker"
+
+- name: Authenticate with LM
+  uri:
+    url: "{{ arm_onboard_addr }}/oauth/token"
+    validate_certs: no
+    method: POST
+    body_format: form-urlencoded
+    body:
+      grant_type: "client_credentials"
+    headers:
+      authorization: "Basic {{ (arm_onboard_client + ':' + arm_onboard_client_secret) | b64encode }}"
+    return_content: yes
+    status_code: 200
+  register: lm_auth_response
+  when: arm_onboard_auth|default(False)|bool == True
+
+- name: Set Access Token fact
+  set_fact:
+    lm_access_token: "{{ lm_auth_response.json.access_token }}"
+  when: arm_onboard_auth|default(False)|bool == True
+
+- name: Remove existing RM from LM
+  uri:
+    url: "{{ arm_onboard_addr }}/api/resource-managers/{{arm_onboard_name}}"
+    validate_certs: no
+    method: DELETE
+    headers:
+      authorization: "{% if arm_onboard_auth|default(False)|bool == True %}Bearer {{ lm_access_token }}{% endif %}"
+    status_code: 204, 404
+
+- name: Determine Ansible RM address for onboarding
+  set_fact:
+    internal_arm_addr: "{% if arm_secure|default(False)|bool == True %}https{% else %}http{% endif %}://osslm-ansible-rm:8443/api/v1.0/resource-manager"
+    external_arm_addr: "{{ arm_addr }}/api/v1.0/resource-manager"
+
+- name: Select Ansible RM address for onboarding
+  set_fact:
+    onboarding_arm_addr: "{% if arm_onboard_url_type|default('internal') == 'internal' %}{{internal_arm_addr}}{% else %}{{external_arm_addr}}{% endif %}"
+
+- name: Onboard Ansible RM
+  uri:
+    url: "{{ arm_onboard_addr }}/api/resource-managers"
+    validate_certs: no
+    method: POST
+    body_format: json
+    body:
+      name: "{{arm_onboard_name}}"
+      type: "{{arm_onboard_type}}"
+      url: "{{onboarding_arm_addr}}"
+    headers:
+      authorization: "{% if arm_onboard_auth|default(False)|bool == True %}Bearer {{ lm_access_token }}{% endif %}"
+    status_code: 201
+
+
