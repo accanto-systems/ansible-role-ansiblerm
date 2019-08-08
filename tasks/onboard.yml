@@ -42,6 +42,15 @@
         location_pwd: "{{ ansible_ssh_pass if ansible_ssh_pass is defined else 'vagrant'}}"
       type: "docker"
 
+# Double check that Ishtar is up
+# TODO this needs to be able to work with more than 1 replica
+- name: Wait for LM Gateway to be ready
+  shell: kubectl get pods | grep ishtar
+  register: ishtar_status
+  until: ishtar_status.stdout.find("1/1") != -1
+  retries: 120
+  delay: 20
+
 - name: Authenticate with LM
   uri:
     url: "{{ arm_onboard_addr }}/oauth/token"
