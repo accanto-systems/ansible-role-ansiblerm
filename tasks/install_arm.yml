@@ -19,7 +19,7 @@
 
 - name: Determine Ansible RM address
   set_fact: 
-    arm_addr: "{% if arm_secure|default(False)|bool == True %}https{% else %}http{% endif %}://{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{arm_port}}"
+    arm_addr: "{% if arm_secure|default(False)|bool == True %}https{% else %}http{% endif %}://{{ advertise_address if advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{arm_port}}"
 
 - name: Wait for Ansible RM to be ready
   uri:

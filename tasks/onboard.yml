@@ -8,7 +8,7 @@
 
 - name: Determine Ansible RM address
   set_fact: 
-    arm_addr: "{% if arm_secure|default(False)|bool == True %}https{% else %}http{% endif %}://{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{arm_port}}"
+    arm_addr: "{% if arm_secure|default(False)|bool == True %}https{% else %}http{% endif %}://{{ advertise_address if advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}:{{arm_port}}"
 
 - name: Attach Dev location
   uri: 
@@ -19,7 +19,7 @@
     body:
       name: "local"
       properties:
-        location_server: "{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        location_server: "{{ advertise_address if advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
         relay_endpoint: "{{ arm_docker_location_relay_addr }}"
         almip: "{{ arm_docker_location_lm_ip }}"
         location_user: "{{ ansible_ssh_user }}"
@@ -35,7 +35,7 @@
     body:
       name: "london"
       properties:
-        location_server: "{{ kubeadm_advertise_address if kubeadm_advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
+        location_server: "{{ advertise_address if advertise_address is defined else hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}"
         relay_endpoint: "{{ arm_docker_location_relay_addr }}"
         almip: "{{ arm_docker_location_lm_ip }}"
         location_user: "{{ ansible_ssh_user }}"
