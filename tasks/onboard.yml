@@ -1,5 +1,7 @@
 - name: Gather Ansible RM Https Port
   shell: "source /etc/profile.d/apps-bin-path.sh && kubectl describe service osslm-ansible-rm | grep https | grep NodePort | awk '{print $3}'"
+  args:
+    executable: /bin/bash
   register: gather_ansible_rm_port_result
 
 - name: Determine Ansible RM Port
