@@ -10,7 +10,9 @@
   command: "helm install {{ helm_inst_arm_chart }} --name ansiblerm -f /tmp/ansiblerm-values.yaml {% if docker_registry_values_path is defined %}-f {{ docker_registry_values_path }}{% endif %}"
 
 - name: Gather Ansible RM Https Port
-  shell: "kubectl describe service osslm-ansible-rm | grep https | grep NodePort | awk '{print $3}'"
+  shell: "source /etc/profile.d/apps-bin-path.sh && kubectl describe service osslm-ansible-rm | grep https | grep NodePort | awk '{print $3}'"
+  args:
+    executable: /bin/bash
   register: gather_ansible_rm_port_result
 
 - name: Determine Ansible RM Port

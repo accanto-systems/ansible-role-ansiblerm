@@ -1,5 +1,7 @@
 - name: Gather Ansible RM Https Port
-  shell: "kubectl describe service osslm-ansible-rm | grep https | grep NodePort | awk '{print $3}'"
+  shell: "source /etc/profile.d/apps-bin-path.sh && kubectl describe service osslm-ansible-rm | grep https | grep NodePort | awk '{print $3}'"
+  args:
+    executable: /bin/bash
   register: gather_ansible_rm_port_result
 
 - name: Determine Ansible RM Port
@@ -45,7 +47,9 @@
 # Double check that Ishtar is up
 # TODO this needs to be able to work with more than 1 replica
 - name: Wait for LM Gateway to be ready
-  shell: kubectl get pods | grep ishtar
+  shell: source /etc/profile.d/apps-bin-path.sh && kubectl get pods | grep ishtar
+  args:
+    executable: /bin/bash
   register: ishtar_status
   until: ishtar_status.stdout.find("1/1") != -1
   retries: 120

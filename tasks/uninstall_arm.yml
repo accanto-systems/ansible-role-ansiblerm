@@ -9,10 +9,14 @@
   when: helm_get_arm is not failed and helm_get_arm.rc == 0
 
 - name: Remove Persistent Volume Claims
-  shell: kubectl delete pvc -l release=ansiblerm
+  shell: source /etc/profile.d/apps-bin-path.sh && kubectl delete pvc -l release=ansiblerm
+  args:
+    executable: /bin/bash
    
 - name: Remove Persistent Volumes 
-  shell: kubectl delete pv -l createdBy=osslm-ansible-rm
+  shell: source /etc/profile.d/apps-bin-path.sh && kubectl delete pv -l createdBy=osslm-ansible-rm
+  args:
+    executable: /bin/bash
   
 - name: Remove volume directories
   file:
