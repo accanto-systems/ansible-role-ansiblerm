@@ -1,0 +1,38 @@
+####################################################################################
+# arm_docker_strategy == from_package
+####################################################################################
+
+- name: Check if Ansible RM Docker TAR already exists
+  stat:
+    path: "{{ lm_installer_dir }}/{{ arm_docker_tar|basename }}" 
+  register: docker_tar_stat
+  when: arm_force_refresh_packages == False
+
+####################################################################################
+# When arm_docker_tar is a HTTP/HTTPs address
+####################################################################################
+- name: Pull Ansible RM Docker TAR
+  get_url:
+    url: "{{ arm_docker_tar }}" 
+    dest: "{{ arm_installer_dir }}/{{ arm_docker_tar|basename }}" 
+  when: >
+    (arm_force_refresh_packages == True or docker_tar_stat.stat.exists == False)
+    and (arm_docker_tar | urlsplit('scheme') == 'http') or (arm_docker_tar | urlsplit('scheme') == 'https')
+
+####################################################################################
+# When arm_docker_tar is a file address
+####################################################################################
+- name: Copy Ansible RM Docker TAR from local file
+  copy: 
+    remote_src: no
+    src: "{{ arm_docker_tar }}" 
+    dest: "{{ arm_installer_dir }}/{{ arm_docker_tar|basename }}" 
+  when: >
+    (arm_force_refresh_packages == True or docker_tar_stat.stat.exists == False)
+    and (arm_docker_tar | urlsplit('scheme') != 'http') and (arm_docker_tar | urlsplit('scheme') != 'https')
+
+####################################################################################
+# For both HTTP and File
+####################################################################################
+- name: Load Docker TAR
+  shell: docker load --input {{ arm_installer_dir }}/{{ arm_docker_tar|basename }}

@@ -1,0 +1,50 @@
+#####################################################
+# Install Ansible RM
+#####################################################
+- name: Register Ansible RM installation directory
+  set_fact:
+    arm_installer_dir: "/home/{{ ansible_user_id }}/arm-installer"
+
+- name: Print Ansible RM installation directory
+  debug:
+    msg: "Ansible RM installation directory set to: {{arm_installer_dir}}"
+
+- name: Ensure directory for installation exists
+  file:
+    path: "{{ arm_installer_dir }}"
+    state: directory
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
+
+- import_tasks: validate_arm_charts_strategy.yml
+- import_tasks: validate_arm_docker_strategy.yml
+
+- import_tasks: prepare_chart_from_path.yml
+  when: arm_charts_strategy == 'path'
+- import_tasks: prepare_chart_from_helm_repo.yml
+  when: arm_charts_strategy == 'from_chart_repo'
+
+- name: Check if force re-install is enabled
+  set_fact:
+    install_allowed: True
+  when: arm_force_reinstall|default(False)|bool == True
+
+- import_tasks: check_current_install.yml
+  when: arm_force_reinstall|default(False)|bool == False
+
+- when: install_allowed == True
+  block:
+    - import_tasks: prepare_docker_images_from_tar.yml
+      when: arm_docker_strategy == 'from_package'
+
+    - import_tasks: prepare_docker_images_from_image.yml
+      when: arm_docker_strategy == 'from_image'
+    
+    - import_tasks: uninstall_arm.yml
+
+    - import_tasks: prepare_volumes_directories.yml
+
+    - import_tasks: install_arm.yml
+
+- import_tasks: onboard.yml
+  when: arm_onboard|default(False)|bool == True
