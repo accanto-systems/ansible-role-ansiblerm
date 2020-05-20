@@ -27,6 +27,7 @@
         location_user: "{{ ansible_ssh_user }}"
         location_pwd: "{{ ansible_ssh_pass if ansible_ssh_pass is defined else 'vagrant'}}"
       type: "docker"
+    status_code: 200, 204
 
 - name: Attach london location
   uri: 
@@ -43,6 +44,7 @@
         location_user: "{{ ansible_ssh_user }}"
         location_pwd: "{{ ansible_ssh_pass if ansible_ssh_pass is defined else 'vagrant'}}"
       type: "docker"
+    status_code: 200, 204
 
 # Double check that Ishtar is up
 # TODO this needs to be able to work with more than 1 replica
